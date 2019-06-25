@@ -34,7 +34,7 @@ def pack(uid, message):
 
 
 # 拆信息
-def getUid(message):
+def getCid(message):
         return int(message[0])
 
     
@@ -59,16 +59,23 @@ def drop(id):
 
 
 # 转发消息
-def transmit(sock, myId):
+def transmit(sock, who):
     while True:
-        data = sock.recv(1024)
+        data = sock.recv(1)
         if not data:
             break
-        ## 拆包 找到 朋友 的 sock
-        conTuple[relationList[getUid(data.decode(coding))]].send(data)
+        sender=conTuple[getCid(data)]
+        while True:
+            data = sock.recv(1024)
+            if len(data)<1024:
+                break
+            else:
+                sender.send(finMessage.encode(coding))
+                # continue
+        sender.send(finMessage.encode(coding))
         
     sock.close()
-    print('%s 断开链接' % myId)
+    print('%s 断开链接' % who)
         
 
 
@@ -77,17 +84,18 @@ def init(sock):
     # 接受用户名
     userName = sock.recv(20)
     # 返回用户id
-    clientId = uidtable[userName.decode(coding)]
-    uid=str(clientId)
-    sock.send(uid.encode(coding))
-    # 获得friendName
-    contact = sock.recv(20)
-    # id对应关系表
-    relationList[int(uid)]=uidtable[contact.decode(coding)]
+    uid = uidtable[userName.decode(coding)]
     # 保存客户端信息
-    save(sock, clientId)
+    save(sock, uid)
+
+    # 获得 contactName
+    contact = sock.recv(20)
+    cid = uidtable[contact.decode(coding)]
+    # uid=str(cid)
+    sock.send(hex(cid))
+    
     print('%s 已连接.' % userName)
-    return clientId
+    return uid
 
 
 # 处理链接之后事务

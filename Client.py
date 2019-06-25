@@ -19,22 +19,24 @@ def exit(signum, frame):
 
 
 # uid 为 int 
-def pack(uid, message):
-    return (str(int(uid))+message).encode(coding)
+def pack(id, message):
+    return (str(id)+message).encode(coding)
+
 
 
 # 接收信息
 def recv(sock):
     while True:
-        data = sock.recv(1024)
-        # 解码
-        message=data.decode(coding)
-        # 拆包
-        message=message[1:]
-        # 打印消息
         print(time.asctime( time.localtime(time.time())))
-        print('[%s:] %s' % (contact, message))
-
+        print('[%s:]' % contact,end='')
+        while True:
+            data = sock.recv(1024)
+            if len(data)<1024:
+                print(data.decode(coding),end='')
+                break
+            else:
+                print(data.decode(coding),end='')
+                # continue
         if not data:
             break
     print('连接已断开\n按回车退出')
@@ -48,8 +50,8 @@ def sendMess(sock):
             # 输入消息
             message = input()
             # 打包
-            global uid
-            message = pack(uid, message)
+            global cid
+            message = pack(cid, message)
             sock.send(message)
         except:
             break
@@ -60,16 +62,16 @@ def main():
     signal.signal(signal.SIGINT, exit)
     signal.signal(signal.SIGTERM, exit)
 
-    global userName, contact, uid
+    global userName, contact, cid
     # 发送用户名
     # userName = input('用户名：')
-    userName='zys'
+    userName='hyx'
     client.send(userName.encode(coding))
-    uid = client.recv(1)
     # 发送联系人名
     # contact = input('联系人名：')
-    contact = 'hyx'
+    contact = 'zys'
     client.send(contact.encode(coding))
+    cid = client.recv(1)
 
     print('已连接服务器。')
     # 新建线程 接收信息  发送信息
