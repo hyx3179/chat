@@ -18,21 +18,21 @@ def exit(signum, frame):
     os._exit(0)
 
 
-# uid 为 int 
+# uid 为 str
 def pack(id, message):
-    return (str(id)+message).encode(coding)
+    return (id+message).encode(coding)
 
 
 
 # 接收信息
 def recv(sock):
     while True:
-        print(time.asctime( time.localtime(time.time())))
+        # print(time.asctime( time.localtime(time.time())))
         print('[%s:]' % contact,end='')
         while True:
             data = sock.recv(1024)
             if len(data)<1024:
-                print(data.decode(coding),end='')
+                print(data.decode(coding))
                 break
             else:
                 print(data.decode(coding),end='')
@@ -64,14 +64,15 @@ def main():
 
     global userName, contact, cid
     # 发送用户名
-    # userName = input('用户名：')
-    userName='hyx'
+    userName = input('用户名：')
+    # userName='hyx'
     client.send(userName.encode(coding))
+    time.sleep(0.01)
     # 发送联系人名
-    # contact = input('联系人名：')
-    contact = 'zys'
+    contact = input('联系人名：')
+    # contact = 'zys'
     client.send(contact.encode(coding))
-    cid = client.recv(1)
+    cid = client.recv(1).decode(coding)
 
     print('已连接服务器。')
     # 新建线程 接收信息  发送信息

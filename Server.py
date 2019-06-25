@@ -64,15 +64,15 @@ def transmit(sock, who):
         data = sock.recv(1)
         if not data:
             break
-        sender=conTuple[getCid(data)]
+        sender=conTuple[int(data.decode(coding))]
         while True:
             data = sock.recv(1024)
             if len(data)<1024:
                 break
             else:
-                sender.send(finMessage.encode(coding))
+                sender.send(data)
                 # continue
-        sender.send(finMessage.encode(coding))
+        sender.send(data)
         
     sock.close()
     print('%s 断开链接' % who)
@@ -92,7 +92,7 @@ def init(sock):
     contact = sock.recv(20)
     cid = uidtable[contact.decode(coding)]
     # uid=str(cid)
-    sock.send(hex(cid))
+    sock.send(str(cid).encode(coding))
     
     print('%s 已连接.' % userName)
     return uid
