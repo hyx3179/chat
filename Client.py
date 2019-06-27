@@ -1,89 +1,123 @@
+#!/usr/bin/python3
 
 # 客户端 Client
 
 from socket import *
-import threading, time, signal, os
+import threading, time, signal, os, _thread
 
-serverAddr = ('127.0.0.1',1027)
-# 创建套接字
-client = socket(AF_INET, SOCK_STREAM)
-client.connect(serverAddr)
+
+#======================================
 coding = 'utf-8'
+flag = True
+#======================================
 
 
-# 用于正常退出程序
-def exit(signum, frame):
-    print('程序退出。')
+# 用于功能选择
+def menu(signum, frame):
+    flag == False
+    print('exit    ---程序退出。')
+    data = input('选：')
+    if data == 'exit':
+        client.close()
+        os._exit(0)
+        return 0
+    ts = threading.Thread(target=sendMess)
+    ts.start()
+    # client.close()
+    # os._exit(0)
+
+# 接收信息
+def recv():
+    while True:
+        print('收：',end='')
+        # print('[%s:]' % contact,end='')
+        data = client.recv(1024)
+        if not data:
+            break
+        if len(data)<1024:
+            print(data.decode(coding))
+            continue
+        else:
+            print(data.decode(coding),end='')
+    print('连接已断开\n按回车退出')
     client.close()
     os._exit(0)
 
 
-# uid 为 str
-def pack(id, message):
-    return (id+message).encode(coding)
-
-
-
-# 接收信息
-def recv(sock):
-    while True:
-        # print(time.asctime( time.localtime(time.time())))
-        print('[%s:]' % contact,end='')
-        while True:
-            data = sock.recv(1024)
-            if len(data)<1024:
-                print(data.decode(coding))
-                break
-            else:
-                print(data.decode(coding),end='')
-                # continue
-        if not data:
-            break
-    print('连接已断开\n按回车退出')
-    sock.close()
-        
-
 # 发送信息
-def sendMess(sock):
+def sendDog():
+    print(_thread.start_new_thread(sendMess,()))
     while True:
+        if flag == False:
+            break
+        else:
+            time.sleep(0.05)
+
+def sendMess():
+    while True:
+        # 发送目标
+        client.send(aims.encode(coding))
         try:
             # 输入消息
-            message = input()
-            # 打包
-            global cid
-            message = pack(cid, message)
-            sock.send(message)
+            data = input('发')
+            client.send(data.encode(coding))
+            print('已发送')
         except:
             break
 
 
-def main():
-    # 信号处理
-    signal.signal(signal.SIGINT, exit)
-    signal.signal(signal.SIGTERM, exit)
-
-    global userName, contact, cid
-    # 发送用户名
-    userName = input('用户名：')
-    # userName='hyx'
-    client.send(userName.encode(coding))
+# 注册
+def signUp():
+    client.send('Y'.encode(coding))
     time.sleep(0.01)
-    # 发送联系人名
-    contact = input('联系人名：')
-    # contact = 'zys'
-    client.send(contact.encode(coding))
-    cid = client.recv(1).decode(coding)
+    client.send((input('用户名： ')).encode(coding))
+    time.sleep(0.01)
+    client.send((input('密码： ')).encode(coding))
 
+
+def main():
+    global client
+    serverIP = ('127.0.0.1',1027)
+    # 创建套接字
+    client = socket(AF_INET, SOCK_STREAM)
+    client.connect(serverIP)
+
+    global aims
+    # 发送用户名
+    while True:
+        userName = input('用户名：')
+        # userName='zys'
+        client.send(userName.encode(coding))
+        data = client.recv(1)
+        if int(data.decode(coding)) == 1:
+            break
+        else:
+            print('用户不存在')
+            if input('是否注册？(Y/N) ') == 'Y':
+                signUp()
     print('已连接服务器。')
-    # 新建线程 接收信息  发送信息
-    tr = threading.Thread(target=recv, args=(client,))
-    ts = threading.Thread(target=sendMess, args=(client,))
+
+    aims = input('联系人名：')
+    # aims = 'hyx'
+    # funcopt='choosefriend'
+    # client.send(funcopt.encode(coding))
+    # time.sleep(0.01)
+    # menu[funcopt]()
+
+    # 新建线程 接收信息
+    tr = threading.Thread(target=recv)
     tr.start()
+    # 新建线程 发送信息
+    ts = threading.Thread(target=sendDog)
     ts.start()
 
     tr.join()
-    ts.join()
 
+
+
+# 信号处理
+signal.signal(signal.SIGINT, menu)
+signal.signal(signal.SIGTERM, exit)
 
 if __name__ == '__main__':
     main()
