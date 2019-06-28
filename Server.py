@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 # 服务器 Server
-
+#
+from os import _exit
 from socket import *
-import threading, time, signal, os
+import threading, time, signal
 import dbOpt
 
 serverIP = ('127.0.0.1',1027)
@@ -26,18 +27,19 @@ relationList={}
 def exit(signum, frame):
     print('服务器关闭。')
     server.close()
-    os._exit(0)
+    _exit(0)
 # 信号处理
 signal.signal(signal.SIGINT, exit)
 signal.signal(signal.SIGTERM, exit)
 
 
 def signUp(sock):
-    newUser = sock.recv(20)
+    newUser = sock.recv(20).decode(coding)
     time.sleep(0.01)
-    passwd = sock.recv(64)
+    passwd = sock.recv(64).decode(coding)
     dbOpt.insert('userInfo',newUser,passwd)
     print('新用户：%s'%newUser)
+
 
 # 转发消息
 def transfer(sock):
@@ -56,9 +58,9 @@ def transfer(sock):
                 break
             if len(data)<1024:
                 sender.send(data)
-                continue
-            else:
-                sender.send(data)
+            #     continue
+            # else:
+            #     sender.send(data)
 
 
 def client(sock):
@@ -76,6 +78,8 @@ def client(sock):
             if sock.recv(1).decode(coding) == 'Y':
                 # 注册函数
                 signUp(sock)
+            else:
+                continue
             continue
         else:
             sock.send('1'.encode(coding))

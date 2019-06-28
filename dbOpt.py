@@ -3,6 +3,17 @@
 
 import pymysql
 
+
+# 链接数据库并执行语句 setence
+def link(setence):
+    db = pymysql.connect('localhost','root','7890','chat' )
+    cursor = db.cursor()
+    result = cursor.execute(setence)
+    db.commit()
+    db.close()
+    return result
+
+
 # 新建用户信息表
 def createTableUserInfo():
     setence = ''' create table userInfo (
@@ -11,10 +22,7 @@ def createTableUserInfo():
                 passwd char(20),
                 primary key(uId)
                 )'''
-    db = pymysql.connect('localhost','root','7890','chat' )
-    cursor = db.cursor()
-    cursor.execute(setence)
-    db.close()
+    link(setence)
 
 
 # 新建用户表
@@ -23,10 +31,7 @@ def createTable(userName):
                 contact char(20),
                 remarks char(20)
                 )''' % userName
-    db = pymysql.connect('localhost','root','7890','chat' )
-    cursor = db.cursor()
-    cursor.execute(setence)
-    db.close()
+    link(setence)
 
 
 # 查询全部
@@ -67,31 +72,19 @@ def selectuName(table, uName):
 # 插入新的列
 def insertColumn(table, newColumn, columnType):
     setence = "alter table %s add %s %s" % (table, newColumn, columnType)
-    db = pymysql.connect('localhost','root','7890','chat' )
-    cursor = db.cursor()
-    cursor.execute(setence)
-    db.commit()
-    db.close()
+    link(setence)
 
 
 # 插入信息
 def insert(table, uName, passwd):
     setence = "insert into %s values(default, '%s', '%s')" % (table, uName, passwd)
-    db = pymysql.connect('localhost','root','7890','chat' )
-    cursor = db.cursor()
-    cursor.execute(setence)
-    db.commit()
-    db.close()
+    link(setence)
 
 
-# 删除
+# 根据 uid 删除
 def delete(table, uid):
     setence = 'delete from %s where uId=%s' % (table, uid)
-    db = pymysql.connect('localhost','root','7890','chat' )
-    cursor = db.cursor()
-    cursor.execute(setence)
-    db.commit()
-    db.close()
+    link(setence)
 
 
 def main():

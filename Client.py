@@ -1,9 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 
 # 客户端 Client
 
+from os import _exit
+from getpass import getpass
 from socket import *
-import threading, time, signal, os, _thread
+import threading, time, signal,  _thread
 
 
 #======================================
@@ -19,12 +21,12 @@ def menu(signum, frame):
     data = input('选：')
     if data == 'exit':
         client.close()
-        os._exit(0)
+        _exit(0)
         return 0
     ts = threading.Thread(target=sendMess)
     ts.start()
     # client.close()
-    # os._exit(0)
+    # _exit(0)
 
 # 接收信息
 def recv():
@@ -41,7 +43,7 @@ def recv():
             print(data.decode(coding),end='')
     print('连接已断开\n按回车退出')
     client.close()
-    os._exit(0)
+    _exit(0)
 
 
 # 发送信息
@@ -70,9 +72,9 @@ def sendMess():
 def signUp():
     client.send('Y'.encode(coding))
     time.sleep(0.01)
-    client.send((input('用户名： ')).encode(coding))
+    client.send(input('用户名： ').encode(coding))
     time.sleep(0.01)
-    client.send((input('密码： ')).encode(coding))
+    client.send(getpass('密码： ').encode(coding))
 
 
 def main():
@@ -89,12 +91,15 @@ def main():
         # userName='zys'
         client.send(userName.encode(coding))
         data = client.recv(1)
-        if int(data.decode(coding)) == 1:
-            break
-        else:
+        if int(data.decode(coding)) == 0:
             print('用户不存在')
             if input('是否注册？(Y/N) ') == 'Y':
                 signUp()
+            else:
+                client.send('N'.encode(coding))
+                continue
+        break
+
     print('已连接服务器。')
 
     aims = input('联系人名：')
