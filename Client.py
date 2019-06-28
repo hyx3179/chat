@@ -16,7 +16,7 @@ flag = True
 
 # 用于功能选择
 def menu(signum, frame):
-    flag == False
+    flag = False
     print('exit    ---程序退出。')
     data = input('选：')
     if data == 'exit':
@@ -50,7 +50,7 @@ def recv():
 def sendDog():
     print(_thread.start_new_thread(sendMess,()))
     while True:
-        if flag == False:
+        if flag:
             break
         else:
             time.sleep(0.05)
