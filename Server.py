@@ -56,11 +56,7 @@ def transfer(sock):
             data = sock.recv(1024)
             if not data:
                 break
-            if len(data)<1024:
-                sender.send(data)
-            #     continue
-            # else:
-            #     sender.send(data)
+            sender.send(data)
 
 
 def client(sock):
