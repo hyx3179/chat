@@ -19,7 +19,7 @@ def createTableUserInfo():
     setence = ''' create table userInfo (
                 uId int auto_increment,
                 uName char(20),
-                passwd char(20),
+                passwd char(32),
                 primary key(uId)
                 )'''
     link(setence)
@@ -48,7 +48,7 @@ def select(table):
 
 
 # 按uId查询
-def selectUseId(table, uid):
+def selectById(table, uId):
     setence = "select * from %s where uId=%s" % (table, uId)
     db = pymysql.connect('localhost','root','7890','chat' )
     cursor = db.cursor()
@@ -66,7 +66,16 @@ def selectuName(table, uName):
     result = cursor.execute(setence)
     data = cursor.fetchone()
     db.close()
-    return result
+    return (result,data)
+
+
+# 按用户名查询是否存在
+def existent(uName):
+    result = selectuName('userInfo', uName)[0]
+    if result != 0:
+        return True
+    return False
+
 
 
 # 插入新的列
@@ -87,8 +96,24 @@ def delete(table, uid):
     link(setence)
 
 
+# 匹配用户名和密码
+def match(userName, passwd):
+    result=selectuName('userInfo', userName)
+    if passwd == result[1][2]:
+        return True
+    else:
+        return False
+
+
 def main():
-    createTableUserInfo()
+#    createTableUserInfo()
+    # print(existent('userInfo'))
+    # print(selectuName('userInfo','zys'))
+    # t = selectById('userInfo',1)
+    # print(type(t[1][2]))
+    # r=selectuName('userInfo','zys')
+    # print(r[1][2])
+    select('userInfo')
     pass
 
 
