@@ -1,38 +1,35 @@
-#!/usr/bin/python2
 
 # 客户端 Client
 
 from os import _exit
 from getpass import getpass
 from socket import *
-import threading, time, signal,  _thread
+import threading, time, signal
 
-
-#======================================
 coding = 'utf-8'
-flag = True
-#======================================
-
+flag = False
+data = 'q'
 
 # 用于功能选择
 def menu(signum, frame):
-    flag = False
-    print('exit    ---程序退出。')
-    data = input('选：')
-    if data == 'exit':
-        client.close()
+    global flag, data
+    flag = True
+    print('\nq    ---程序退出。')
+    while True:
+        if threading.active_count() == 2 or threading.active_count() == 1:
+            break
+        else:
+            time.sleep(0.01)
+    if data == 'q':
         _exit(0)
-        return 0
-    ts = threading.Thread(target=sendMess)
-    ts.start()
-    # client.close()
-    # _exit(0)
+    flag = False
+    sendThread = threading.Thread(target=sendDog, args=(aims,))
+    sendThread.start()
+
 
 # 接收信息
 def recv():
     while True:
-        print('收：',end='')
-        # print('[%s:]' % contact,end='')
         data = client.recv(1024)
         if not data:
             break
@@ -41,29 +38,33 @@ def recv():
             continue
         else:
             print(data.decode(coding),end='')
-    print('连接已断开\n按回车退出')
+    print('连接已断开')
     client.close()
     _exit(0)
 
 
-# 发送信息
-def sendDog():
-    print(_thread.start_new_thread(sendMess,()))
+# 守护 消息狗
+def sendDog(aims):
+    _send = threading.Thread(target=send, args=(aims,))
+    _send.start()
     while True:
         if flag:
             break
         else:
             time.sleep(0.05)
 
-def sendMess():
+
+def send(aims):
+    global data
+    # 发送目标
+    client.send(aims.encode(coding))
     while True:
-        # 发送目标
-        client.send(aims.encode(coding))
         try:
             # 输入消息
-            data = input('发')
+            data = input()
+            if flag:
+                break
             client.send(data.encode(coding))
-            print('已发送')
         except:
             break
 
@@ -79,19 +80,27 @@ def signUp():
 
 def main():
     global client
-    serverIP = ('127.0.0.1',1027)
+    serverIP = '0.0.0.0'
+    port = 1027
     # 创建套接字
     client = socket(AF_INET, SOCK_STREAM)
-    client.connect(serverIP)
+    for i in range(10):
+        try:
+            client.connect((serverIP, port))
+            break
+        except ConnectionRefusedError:
+            port = port + 1
+        if i == 9:
+            print('无法连接服务器')
+            _exit(0)
 
-    global aims
     # 发送用户名
     while True:
         userName = input('用户名：')
-        # userName='zys'
+        # userName='hyx'
         client.send(userName.encode(coding))
-        data = client.recv(1)
-        if int(data.decode(coding)) == 0:
+        signinfo = client.recv(1)
+        if int(signinfo.decode(coding)) == 0:
             print('用户不存在')
             if input('是否注册？(Y/N) ') == 'Y':
                 signUp()
@@ -104,25 +113,20 @@ def main():
 
     aims = input('联系人名：')
     # aims = 'hyx'
-    # funcopt='choosefriend'
-    # client.send(funcopt.encode(coding))
-    # time.sleep(0.01)
-    # menu[funcopt]()
 
     # 新建线程 接收信息
-    tr = threading.Thread(target=recv)
-    tr.start()
+    recvThread = threading.Thread(target=recv)
+    recvThread.start()
+
     # 新建线程 发送信息
-    ts = threading.Thread(target=sendDog)
-    ts.start()
+    sendThread = threading.Thread(target=sendDog, args=(aims,))
+    sendThread.start()
 
-    tr.join()
-
-
+    recvThread.join()
 
 # 信号处理
 signal.signal(signal.SIGINT, menu)
-signal.signal(signal.SIGTERM, exit)
+
 
 if __name__ == '__main__':
     main()
