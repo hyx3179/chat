@@ -4,7 +4,7 @@
 from os import _exit
 from getpass import getpass
 from socket import *
-import threading, time, signal, hashlib
+import threading, time, sys, signal, hashlib
 
 coding = 'utf-8'
 flag = False
@@ -90,6 +90,7 @@ def signUp():
     for x in range(3):
         passwd = _getpass()
         print('再次',end='')
+        sys.stdout.flush()
         if _getpass() == passwd:
             break
         if x == 2:
